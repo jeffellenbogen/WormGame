@@ -1,0 +1,200 @@
+###############################
+#  Imports for reading keyboard
+##############################
+import sys, os
+import termios, fcntl
+
+# used to slow down our main loop
+import time
+
+import random
+################################
+#  Initialize keyboard reading. 
+#  Save the old terminal configuration, and
+#  tweak the terminal so that it doesn't echo, and doesn't block.
+################################
+fd = sys.stdin.fileno()
+newattr = termios.tcgetattr(fd)
+
+oldterm = termios.tcgetattr(fd)
+oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+
+newattr[3] = newattr[3] & ~termios.ICANON
+newattr[3] = newattr[3] & ~termios.ECHO
+
+fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+
+termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+##################################
+# Non-blocking character read function.
+#################################
+def getch_noblock():
+  try:
+    return sys.stdin.read()
+  except (IOError, TypeError) as e:
+    return None
+
+###################################
+# Graphics imports, constants and structures
+###################################
+from rgbmatrix import RGBMatrix, RGBMatrixOptions
+from PIL import Image, ImageDraw
+
+# our led matrix is 64x64.
+matrix_size = 64
+
+# the "draw size" for our ball in pixels 
+sprite_size = 1
+
+options = RGBMatrixOptions()
+options.rows = matrix_size 
+options.cols = matrix_size 
+options.chain_length = 1
+options.parallel = 1
+options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafruit-hat'
+
+matrix = RGBMatrix(options = options)
+
+###################################################
+#Creates worm global data
+###################################################
+startRange = (matrix_size/4)
+wormStartLength = 17
+headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+
+worm = [[headX,headY]]
+for i in range(wormStartLength):
+    worm.append([headX,headY+i])
+worm_color = (255,0,100)
+black = (0,0,0)
+
+###################################################
+# show_worm
+################################################### 
+def show_worm(show):
+  if show:
+    temp_color = worm_color
+  else:
+    temp_color = black
+
+  temp_image = Image.new("RGB", (sprite_size, sprite_size))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  # Start with a worm as an list of x,y coordinates.
+  temp_draw.rectangle((0,0,sprite_size-1,sprite_size-1), outline=temp_color, fill=temp_color)
+  for segment in worm:
+    matrix.SetImage(temp_image, segment[0],segment[1])
+
+####################################################
+# show_head
+####################################################
+def show_head(): 
+  worm_color= (255,0,100)
+  temp_image = Image.new("RGB", (sprite_size, sprite_size))
+  temp_draw = ImageDraw.Draw(temp_image)
+  temp_draw.rectangle((0,0,sprite_size-1,sprite_size-1), outline=worm_color, fill=worm_color)
+  matrix.SetImage(temp_image, worm[0][0],worm[0][1])
+
+####################################################
+# delete_tail
+####################################################
+def delete_tail(): 
+  worm_color = (0,0,0)  
+  temp_image = Image.new("RGB", (sprite_size, sprite_size))
+  temp_draw = ImageDraw.Draw(temp_image)
+  temp_draw.rectangle((0,0,sprite_size-1,sprite_size-1), outline=black, fill=black)
+  matrix.SetImage(temp_image, worm[-1][0],worm[-1][1])
+
+####################################################
+# worm_death
+####################################################
+def worm_death():
+  death_color = (255,255,255)
+  temp_image = Image.new("RGB", (sprite_size, sprite_size))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  temp_draw.ellipse((0,0,5,5), outline=death_color, fill=worm_color)
+  matrix.SetImage(temp_image, worm[0][0],worm[0][1])
+###################################
+# Main loop 
+###################################
+
+# player starts in the middle of the screen
+show_worm(True)
+
+# player starts without motion
+current_dir = "up"
+
+print "controls:  i=up, j=left, k=down, l=right, s=stop, q=quit"
+while True:
+  key = getch_noblock()
+
+  if key == 'q':
+     break    
+  if (key == 'i') & (current_dir != "down"):
+    current_dir = "up" 
+  if (key == 'k') & (current_dir != "up"):
+    current_dir = "down" 
+  if (key == 'j') & (current_dir != "right"):
+    current_dir = "left" 
+  if (key == 'l') & (current_dir != "left"):
+    current_dir = "right" 
+  if key == 's':
+    current_dir = "stop"
+
+  if current_dir == "up":
+     # only move the player if there is room to go up.
+     if worm[0][1] > 0:
+        delete_tail()
+        del worm[-1]
+        newX = worm[0][0]
+        newY = worm[0][1]-1
+        worm.insert(0,[newX,newY])
+        show_head()
+     if worm[0][1] <= 0:
+         worm_death()
+ 
+  if current_dir == "left":
+     # only move the player if there is room to go up.
+     if worm[0][0] > 0:
+        delete_tail()
+        del worm[-1]
+        newX = worm[0][0]-1
+        newY = worm[0][1]
+        worm.insert(0,[newX,newY])
+        show_head()
+
+  if current_dir == "right":
+     # only move the player if there is room to go up.
+     if worm[0][0] < 63:
+        delete_tail()
+        del worm[-1]
+        newX = worm[0][0]+1
+        newY = worm[0][1]
+        worm.insert(0,[newX,newY])
+        show_head()
+        
+  if current_dir == "down":
+     # only move the player if there is room to go up.
+     if worm[0][1] < 63:
+        delete_tail()
+        del worm[-1]
+        newX = worm[0][0]
+        newY = worm[0][1]+1
+        worm.insert(0,[newX,newY])
+        show_head()
+
+  if ((worm[0][1] <= 0) | (worm[0][1] >= 63) | (worm[0][0] <= 0) | (worm[0][0] >= 63)):
+     worm_death()
+   
+  time.sleep(.1)
+
+
+###################################
+# Reset the terminal on exit
+###################################
+termios.tcsetattr(fd, termios.TCSANOW, oldterm)
+
+fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
