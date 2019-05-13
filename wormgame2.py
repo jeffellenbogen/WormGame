@@ -102,7 +102,7 @@ def show_head():
 ####################################################
 def delete_tail(): 
   worm_color = (0,0,0)  
-  temp_image = Image.new("RGB", (sprite_size, sprite_size))
+  temp_image = Image.new("RGB", (sprite_size,sprite_size))
   temp_draw = ImageDraw.Draw(temp_image)
   temp_draw.rectangle((0,0,sprite_size-1,sprite_size-1), outline=black, fill=black)
   matrix.SetImage(temp_image, worm[-1][0],worm[-1][1])
@@ -111,12 +111,22 @@ def delete_tail():
 # worm_death
 ####################################################
 def worm_death():
-  death_color = (255,255,255)
-  temp_image = Image.new("RGB", (sprite_size, sprite_size))
-  temp_draw = ImageDraw.Draw(temp_image)
+  #hide worm
+  show_worm(False)  
+  
+  #animate worm explosion  
+  death_color = (255,0,0)
+  death_fill = (255,255,255)
+  for deathloop in range(3,11,2):
+    ellipse_offset = (deathloop-1)/2
+    temp_image = Image.new("RGB", (deathloop,deathloop))
+    temp_draw = ImageDraw.Draw(temp_image)
+    temp_draw.ellipse((0,0,deathloop-1,deathloop-1), outline=death_color, fill=death_fill)
+    matrix.SetImage(temp_image, worm[0][0]-ellipse_offset,worm[0][1]-ellipse_offset)
+    time.sleep(.1)
 
-  temp_draw.ellipse((0,0,5,5), outline=death_color, fill=worm_color)
-  matrix.SetImage(temp_image, worm[0][0],worm[0][1])
+
+ 
 ###################################
 # Main loop 
 ###################################
@@ -153,8 +163,10 @@ while True:
         newY = worm[0][1]-1
         worm.insert(0,[newX,newY])
         show_head()
-     if worm[0][1] <= 0:
-         worm_death()
+ ##  if worm[0][1] <= 0:
+     else:
+        worm_death()
+        break
  
   if current_dir == "left":
      # only move the player if there is room to go up.
@@ -165,6 +177,9 @@ while True:
         newY = worm[0][1]
         worm.insert(0,[newX,newY])
         show_head()
+     else:
+        worm_death()
+        break
 
   if current_dir == "right":
      # only move the player if there is room to go up.
@@ -175,7 +190,10 @@ while True:
         newY = worm[0][1]
         worm.insert(0,[newX,newY])
         show_head()
-        
+     else:
+         worm_death()
+         break
+
   if current_dir == "down":
      # only move the player if there is room to go up.
      if worm[0][1] < 63:
@@ -185,10 +203,14 @@ while True:
         newY = worm[0][1]+1
         worm.insert(0,[newX,newY])
         show_head()
+     else:
+         worm_death()
+         break
 
-  if ((worm[0][1] <= 0) | (worm[0][1] >= 63) | (worm[0][0] <= 0) | (worm[0][0] >= 63)):
-     worm_death()
-   
+    #still need to add death when worm eats itself
+
+    #still need to add apple and add interaction between head of worm and apple
+
   time.sleep(.1)
 
 
