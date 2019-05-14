@@ -44,8 +44,11 @@ from PIL import Image, ImageDraw
 # our led matrix is 64x64.
 matrix_size = 64
 
-# the "draw size" for our ball in pixels 
+# the "draw size" for each segment of the worm
 sprite_size = 1
+
+# the "draw size" for the apple
+apple_size = 6 
 
 options = RGBMatrixOptions()
 options.rows = matrix_size 
@@ -57,8 +60,8 @@ options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafr
 matrix = RGBMatrix(options = options)
 
 ###################################################
-#Creates worm global data
-###################################################
+#Creates global data
+##############################3#####################
 startRange = (matrix_size/4)
 wormStartLength = 17
 headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
@@ -67,8 +70,14 @@ headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
 worm = [[headX,headY]]
 for i in range(wormStartLength):
     worm.append([headX,headY+i])
+
+    
 worm_color = (255,0,100)
+apple_color = (0,255,50)
 black = (0,0,0)
+
+# initial score is 0
+score = 0
 
 ###################################################
 # show_worm
@@ -107,6 +116,7 @@ def delete_tail():
   temp_draw.rectangle((0,0,sprite_size-1,sprite_size-1), outline=black, fill=black)
   matrix.SetImage(temp_image, worm[-1][0],worm[-1][1])
 
+
 ####################################################
 # worm_death
 ####################################################
@@ -117,15 +127,32 @@ def worm_death():
   #animate worm explosion  
   death_color = (255,0,0)
   death_fill = (255,255,255)
-  for deathloop in range(3,11,2):
+  for deathloop in range(3,90,2):
     ellipse_offset = (deathloop-1)/2
     temp_image = Image.new("RGB", (deathloop,deathloop))
     temp_draw = ImageDraw.Draw(temp_image)
     temp_draw.ellipse((0,0,deathloop-1,deathloop-1), outline=death_color, fill=death_fill)
     matrix.SetImage(temp_image, worm[0][0]-ellipse_offset,worm[0][1]-ellipse_offset)
-    time.sleep(.1)
+    time.sleep(.01)
 
 
+####################################################
+# show_apple
+####################################################
+def show_apple(show):
+  if show:
+    temp_color = apple_color
+  else:
+    temp_color = black
+
+  temp_image = Image.new("RGB", (apple_size, apple_size))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  appleX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+  appleY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+  temp_draw.ellipse((1,1,apple_size-1,apple_size-1), outline=temp_color, fill=temp_color)
+  temp_draw.rectangle((3,0,3,1), outline=temp_color, fill=temp_color)
+  matrix.SetImage(temp_image, appleX, appleY)
  
 ###################################
 # Main loop 
@@ -133,6 +160,7 @@ def worm_death():
 
 # player starts in the middle of the screen
 show_worm(True)
+show_apple(True)
 
 # player starts without motion
 current_dir = "up"
@@ -163,7 +191,6 @@ while True:
         newY = worm[0][1]-1
         worm.insert(0,[newX,newY])
         show_head()
- ##  if worm[0][1] <= 0:
      else:
         worm_death()
         break
@@ -212,6 +239,14 @@ while True:
     #still need to add apple and add interaction between head of worm and apple
 
   time.sleep(.1)
+
+
+###################################
+# Show score after While Loop is broken
+###################################
+
+
+
 
 
 ###################################
