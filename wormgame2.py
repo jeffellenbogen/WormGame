@@ -48,7 +48,7 @@ matrix_size = 64
 sprite_size = 1
 
 # the "draw size" for the apple
-apple_size = 6 
+apple_size = 7  #apple_size needs to be odd or it will look weird 
 
 options = RGBMatrixOptions()
 options.rows = matrix_size 
@@ -68,9 +68,11 @@ headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
 headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
 
 worm = [[headX,headY]]
-for i in range(wormStartLength):
+for i in range(1,wormStartLength):
     worm.append([headX,headY+i])
 
+appleX = 0
+appleY = 0
     
 worm_color = (255,0,100)
 apple_color = (0,255,50)
@@ -78,6 +80,7 @@ black = (0,0,0)
 
 # initial score is 0
 score = 0
+print worm
 
 ###################################################
 # show_worm
@@ -127,13 +130,13 @@ def worm_death():
   #animate worm explosion  
   death_color = (255,0,0)
   death_fill = (255,255,255)
-  for deathloop in range(3,90,2):
+  for deathloop in range(3,13,2):
     ellipse_offset = (deathloop-1)/2
     temp_image = Image.new("RGB", (deathloop,deathloop))
     temp_draw = ImageDraw.Draw(temp_image)
     temp_draw.ellipse((0,0,deathloop-1,deathloop-1), outline=death_color, fill=death_fill)
     matrix.SetImage(temp_image, worm[0][0]-ellipse_offset,worm[0][1]-ellipse_offset)
-    time.sleep(.01)
+    time.sleep(.1)
 
 
 ####################################################
@@ -150,10 +153,33 @@ def show_apple(show):
 
   appleX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
   appleY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
-  temp_draw.ellipse((1,1,apple_size-1,apple_size-1), outline=temp_color, fill=temp_color)
-  temp_draw.rectangle((3,0,3,1), outline=temp_color, fill=temp_color)
+ # temp_draw.ellipse((1,2,5,6), outline=temp_color, fill=temp_color)
+  temp_draw.ellipse((1,2,apple_size-2,apple_size-1), outline=temp_color, fill=temp_color)
+  temp_draw.line(((apple_size+1)/2,0,(apple_size-1)/2,1), fill=worm_color)
+ # temp_draw.line((4,0,3,1), fill=worm_color)
+ #  temp_draw.point((0,0),fill=worm_color)
   matrix.SetImage(temp_image, appleX, appleY)
- 
+
+
+#######################################################
+# check_self_collision
+#######################################################
+def check_self_collision(passedX, passedY):
+  for segment in worm:
+      if(segment[0] == passedX) & (segment[1] == passedY):
+        return True
+  return False
+
+#######################################################
+# check_apple_collision
+#######################################################
+def check_apple_collision(passedX, passedY):
+  if(((passedX >= appleX+2) & (passedX <= appleX+6)) & ((passedY >= appleY+2) & (passedY <= appleY+6))):
+    return True
+  return False
+
+
+
 ###################################
 # Main loop 
 ###################################
@@ -189,6 +215,15 @@ while True:
         del worm[-1]
         newX = worm[0][0]
         newY = worm[0][1]-1
+        if check_self_collision(newX,newY):
+            worm_death()
+            break
+        if check_apple_collision(newX,newY):
+            print "apple hit"
+            score=score+1
+            show_apple(False)
+            sleep(.2)
+            show_apple(True)     
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -202,6 +237,9 @@ while True:
         del worm[-1]
         newX = worm[0][0]-1
         newY = worm[0][1]
+        if check_self_collision(newX,newY):
+            worm_death()
+            break
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -215,6 +253,9 @@ while True:
         del worm[-1]
         newX = worm[0][0]+1
         newY = worm[0][1]
+        if check_self_collision(newX,newY):
+            worm_death()
+            break
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -228,6 +269,9 @@ while True:
         del worm[-1]
         newX = worm[0][0]
         newY = worm[0][1]+1
+        if check_self_collision(newX,newY):
+            worm_death()
+            break
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -244,9 +288,14 @@ while True:
 ###################################
 # Show score after While Loop is broken
 ###################################
+temp_image = Image.new("RGB", (64, 64))
+temp_draw = ImageDraw.Draw(temp_image)
+#temp_draw.point((1,1), fill=(255,0,0))
+temp_draw.text((1,1),str(score), fill=(255,0,0))
 
+matrix.SetImage(temp_image,0,0)
 
-
+time.sleep(1)
 
 
 ###################################
