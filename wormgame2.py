@@ -63,7 +63,7 @@ matrix = RGBMatrix(options = options)
 #Creates global data
 ##############################3#####################
 startRange = (matrix_size/4)
-wormStartLength = 17
+wormStartLength = 10
 headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
 headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
 
@@ -76,11 +76,16 @@ appleY = 0
     
 worm_color = (255,0,100)
 apple_color = (0,255,50)
+stem_color = (146,98,13)
 black = (0,0,0)
 
 # initial score is 0
 score = 0
-print worm
+
+
+# initial speed is set with a delay between moving of .1
+speed_delay = .15
+#print worm
 
 ###################################################
 # show_worm
@@ -143,22 +148,27 @@ def worm_death():
 # show_apple
 ####################################################
 def show_apple(show):
+  global appleX
+  global appleY
   if show:
     temp_color = apple_color
+    temp_color_stem = stem_color
+    appleX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+    appleY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+  
   else:
     temp_color = black
+    temp_color_stem = black
 
   temp_image = Image.new("RGB", (apple_size, apple_size))
   temp_draw = ImageDraw.Draw(temp_image)
-
-  appleX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
-  appleY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
- # temp_draw.ellipse((1,2,5,6), outline=temp_color, fill=temp_color)
   temp_draw.ellipse((1,2,apple_size-2,apple_size-1), outline=temp_color, fill=temp_color)
-  temp_draw.line(((apple_size+1)/2,0,(apple_size-1)/2,1), fill=worm_color)
- # temp_draw.line((4,0,3,1), fill=worm_color)
- #  temp_draw.point((0,0),fill=worm_color)
+  temp_draw.line(((apple_size+1)/2,0,(apple_size-1)/2,1), fill=temp_color_stem)
   matrix.SetImage(temp_image, appleX, appleY)
+
+
+# temp_draw.line((4,0,3,1), fill=worm_color)
+# temp_draw.point((0,0),fill=worm_color)
 
 
 #######################################################
@@ -166,19 +176,30 @@ def show_apple(show):
 #######################################################
 def check_self_collision(passedX, passedY):
   for segment in worm:
-      if(segment[0] == passedX) & (segment[1] == passedY):
-        return True
+    if(segment[0] == passedX) & (segment[1] == passedY):
+      return True
   return False
 
 #######################################################
 # check_apple_collision
 #######################################################
 def check_apple_collision(passedX, passedY):
-  if(((passedX >= appleX+2) & (passedX <= appleX+6)) & ((passedY >= appleY+2) & (passedY <= appleY+6))):
-    return True
+  global wormStartLength
+  global speed_delay
+  global score
+  for segment in worm:
+    if(((passedX >= appleX+1) & (passedX <= appleX+5)) & ((passedY >= appleY+1) & (passedY <= appleY+5))):
+      wormStartLength= wormStartLength + 1
+      score = score + 1
+      speed_delay = speed_delay*.9
+      return True
   return False
 
-
+#########################################################
+# Print Updates to Terminal
+########################################################
+def print_updates():
+  print "apples hit=", score, "wormLength =", wormStartLength, "speed_delay =", speed_delay
 
 ###################################
 # Main loop 
@@ -219,10 +240,8 @@ while True:
             worm_death()
             break
         if check_apple_collision(newX,newY):
-            print "apple hit"
-            score=score+1
+            print_updates()
             show_apple(False)
-            sleep(.2)
             show_apple(True)     
         worm.insert(0,[newX,newY])
         show_head()
@@ -240,6 +259,10 @@ while True:
         if check_self_collision(newX,newY):
             worm_death()
             break
+        if check_apple_collision(newX,newY):
+            print_updates()
+            show_apple(False)
+            show_apple(True)     
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -256,6 +279,10 @@ while True:
         if check_self_collision(newX,newY):
             worm_death()
             break
+        if check_apple_collision(newX,newY):
+            print_updates()
+            show_apple(False)
+            show_apple(True)     
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -272,6 +299,10 @@ while True:
         if check_self_collision(newX,newY):
             worm_death()
             break
+        if check_apple_collision(newX,newY):
+            print_updates()
+            show_apple(False)
+            show_apple(True)     
         worm.insert(0,[newX,newY])
         show_head()
      else:
@@ -282,7 +313,7 @@ while True:
 
     #still need to add apple and add interaction between head of worm and apple
 
-  time.sleep(.1)
+  time.sleep(speed_delay)
 
 
 ###################################
@@ -292,9 +323,7 @@ temp_image = Image.new("RGB", (64, 64))
 temp_draw = ImageDraw.Draw(temp_image)
 #temp_draw.point((1,1), fill=(255,0,0))
 temp_draw.text((1,1),str(score), fill=(255,0,0))
-
 matrix.SetImage(temp_image,0,0)
-
 time.sleep(1)
 
 
