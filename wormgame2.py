@@ -82,7 +82,6 @@ black = (0,0,0)
 # initial score is 0
 score = 0
 
-
 # initial speed is set with a delay between moving of .1
 speed_delay = .15
 #print worm
@@ -188,9 +187,10 @@ def check_apple_collision(passedX, passedY):
   global speed_delay
   global score
   for segment in worm:
-    if(((passedX >= appleX+1) & (passedX <= appleX+5)) & ((passedY >= appleY+1) & (passedY <= appleY+5))):
+    if(((passedX >= appleX+1) & (passedX <= appleX+5)) & ((passedY >= appleY+2) & (passedY <= appleY+6))):
       wormStartLength= wormStartLength + 1
       score = score + 1
+      show_score()
       speed_delay = speed_delay*.9
       return True
   return False
@@ -202,20 +202,35 @@ def print_updates():
   print "apples hit=", score, "wormLength =", wormStartLength, "speed_delay =", speed_delay
 
 ###################################
+# show_Score Show score after While Loop is broken
+###################################
+def show_score():
+    global score
+    temp_image = Image.new("RGB", (24, 12))
+    temp_draw = ImageDraw.Draw(temp_image)
+#temp_draw.point((1,1), fill=(255,0,0))
+    temp_draw.text((0,0),str(score), fill=(255,0,0))
+    matrix.SetImage(temp_image,3,0)
+
+
+
+
+
+###################################
 # Main loop 
 ###################################
 
 # player starts in the middle of the screen
 show_worm(True)
 show_apple(True)
-
+show_score()
 # player starts without motion
 current_dir = "up"
 
 print "controls:  i=up, j=left, k=down, l=right, s=stop, q=quit"
 while True:
   key = getch_noblock()
-
+ # show_score()
   if key == 'q':
      break    
   if (key == 'i') & (current_dir != "down"):
@@ -232,8 +247,6 @@ while True:
   if current_dir == "up":
      # only move the player if there is room to go up.
      if worm[0][1] > 0:
-        delete_tail()
-        del worm[-1]
         newX = worm[0][0]
         newY = worm[0][1]-1
         if check_self_collision(newX,newY):
@@ -243,7 +256,12 @@ while True:
             print_updates()
             show_apple(False)
             show_apple(True)     
+        else:
+            delete_tail()
+            del worm[-1]
+
         worm.insert(0,[newX,newY])
+
         show_head()
      else:
         worm_death()
@@ -252,8 +270,6 @@ while True:
   if current_dir == "left":
      # only move the player if there is room to go up.
      if worm[0][0] > 0:
-        delete_tail()
-        del worm[-1]
         newX = worm[0][0]-1
         newY = worm[0][1]
         if check_self_collision(newX,newY):
@@ -263,7 +279,12 @@ while True:
             print_updates()
             show_apple(False)
             show_apple(True)     
+        else:
+            delete_tail()
+            del worm[-1]
+
         worm.insert(0,[newX,newY])
+
         show_head()
      else:
         worm_death()
@@ -272,8 +293,6 @@ while True:
   if current_dir == "right":
      # only move the player if there is room to go up.
      if worm[0][0] < 63:
-        delete_tail()
-        del worm[-1]
         newX = worm[0][0]+1
         newY = worm[0][1]
         if check_self_collision(newX,newY):
@@ -283,17 +302,20 @@ while True:
             print_updates()
             show_apple(False)
             show_apple(True)     
+        else:
+            delete_tail()
+            del worm[-1]
+
         worm.insert(0,[newX,newY])
+
         show_head()
      else:
-         worm_death()
-         break
+        worm_death()
+        break
 
   if current_dir == "down":
      # only move the player if there is room to go up.
      if worm[0][1] < 63:
-        delete_tail()
-        del worm[-1]
         newX = worm[0][0]
         newY = worm[0][1]+1
         if check_self_collision(newX,newY):
@@ -303,28 +325,22 @@ while True:
             print_updates()
             show_apple(False)
             show_apple(True)     
+        else:
+            delete_tail()
+            del worm[-1]
+
         worm.insert(0,[newX,newY])
+
         show_head()
      else:
-         worm_death()
-         break
-
-    #still need to add death when worm eats itself
-
-    #still need to add apple and add interaction between head of worm and apple
+        worm_death()
+        break
 
   time.sleep(speed_delay)
 
+show_score()
+time.sleep(2)
 
-###################################
-# Show score after While Loop is broken
-###################################
-temp_image = Image.new("RGB", (64, 64))
-temp_draw = ImageDraw.Draw(temp_image)
-#temp_draw.point((1,1), fill=(255,0,0))
-temp_draw.text((1,1),str(score), fill=(255,0,0))
-matrix.SetImage(temp_image,0,0)
-time.sleep(1)
 
 
 ###################################
