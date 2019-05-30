@@ -255,6 +255,7 @@ while True:
         if check_apple_collision(newX,newY):
             print_updates()
             show_apple(False)
+            show_worm(True)
             show_apple(True)     
         else:
             delete_tail()
@@ -278,6 +279,7 @@ while True:
         if check_apple_collision(newX,newY):
             print_updates()
             show_apple(False)
+            show_worm(True)
             show_apple(True)     
         else:
             delete_tail()
@@ -301,6 +303,7 @@ while True:
         if check_apple_collision(newX,newY):
             print_updates()
             show_apple(False)
+            show_worm(True)
             show_apple(True)     
         else:
             delete_tail()
@@ -324,6 +327,7 @@ while True:
         if check_apple_collision(newX,newY):
             print_updates()
             show_apple(False)
+            show_worm(True)
             show_apple(True)     
         else:
             delete_tail()
