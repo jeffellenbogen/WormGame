@@ -244,6 +244,8 @@ while True:
   if key == 's':
     current_dir = "stop"
 
+  show_worm(False)
+
   if current_dir == "up":
      # only move the player if there is room to go up.
      if worm[0][1] > 0:
@@ -257,12 +259,10 @@ while True:
             show_apple(False)
             show_apple(True)     
         else:
-            delete_tail()
             del worm[-1]
 
         worm.insert(0,[newX,newY])
 
-        show_head()
      else:
         worm_death()
         break
@@ -280,12 +280,10 @@ while True:
             show_apple(False)
             show_apple(True)     
         else:
-            delete_tail()
             del worm[-1]
 
         worm.insert(0,[newX,newY])
 
-        show_head()
      else:
         worm_death()
         break
@@ -303,12 +301,10 @@ while True:
             show_apple(False)
             show_apple(True)     
         else:
-            delete_tail()
             del worm[-1]
 
         worm.insert(0,[newX,newY])
 
-        show_head()
      else:
         worm_death()
         break
@@ -326,16 +322,14 @@ while True:
             show_apple(False)
             show_apple(True)     
         else:
-            delete_tail()
             del worm[-1]
 
         worm.insert(0,[newX,newY])
 
-        show_head()
      else:
         worm_death()
         break
-
+  show_worm(True)
   time.sleep(speed_delay)
 
 show_score()
