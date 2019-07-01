@@ -83,7 +83,7 @@ black = (0,0,0)
 score = 0
 
 # initial speed is set with a delay between moving of .1
-speed_delay = .15
+speed_delay = .14
 #print worm
 
 ###################################################
