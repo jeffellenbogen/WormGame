@@ -15,66 +15,6 @@ gamepad = InputDevice('/dev/input/event1')
 
 #add error checking here to make sure we've got an input device...
 
-d_up = 544
-d_down = 545
-d_left = 546
-d_right = 547
-
-def get_dir():
-  
-  global gamepad
-  global d_up
-  global d_down
-  global d_left
-  global d_right
-
-  # Note:  I'm currently doing an extra map to [ijkl], because that's the old input
-  # that the game expected.  May be better to eventually change this to the dir, but this 
-  # way I don't have to re-write the mapping in the main loop
-  ''' OLD
-  for event in gamepad.read_loop():
-    if event.type ==ecodes.EV_KEY:
-      if event.value == 1:
-        if event.code == d_up:
-          print("UP")
-          return "i"
-        elif event.code == d_down:
-          print("DOWN")
-          return "k"
-        elif event.code == d_left:
-          print("LEFT")
-          return "j"
-        elif event.code == d_right: 
-          print("RIGHT")
-          return "l"
-        else:
-          return "No input"
-   
-  NEW: 
-  '''
-
-  event = gamepad.read_one()
-  if event == None:
-     return "NoInput"
-
-  if event.type ==ecodes.EV_KEY:
-    if event.value == 1:
-        if event.code == d_up:
-          print("UP")
-          return "i"
-        elif event.code == d_down:
-          print("DOWN")
-          return "k"
-        elif event.code == d_left:
-          print("LEFT")
-          return "j"
-        elif event.code == d_right: 
-          print("RIGHT")
-          return "l"
-        else:
-          return "ERROR in get_dir()"
-   
-
 ###################################
 # Graphics imports, constants and structures
 ###################################
@@ -113,9 +53,214 @@ sprite_size = 1
 # the "draw size" for the apple
 apple_size = 7  #apple_size needs to be odd or it will look weird 
 
+###################################
+# High Score data
+#   High scores are stored as a list of (score,name) tuples
+#   Initialize the list with some default data.
+###################################
+num_high_scores = 5
+high_scores = \
+[ \
+  (0,"DAW"),  \
+  (0,"DAW"),  \
+  (0,"DAW"),  \
+  (0,"DAW"),  \
+  (0,"DAW")   \
+]
+
+
+##################################
+# Sort Scores
+#  Want to sort based on first value
+################################## 
+def sort_scores(val):
+  return(val[0])
+
+##################################
+# Show High Scores 
+###################################
+def show_high_scores():
+  global high_scores
+
+  temp_image = Image.new("RGB", (total_columns, total_rows))
+  temp_draw = ImageDraw.Draw(temp_image)
+  row = 0
+  row_size = 10 
+  
+  high_score_color = (255,0,0)
+  
+  
+  temp_draw.text((0,row),"High Scores:", fill=(255,0,0))
+  row += row_size
+
+  high_scores.sort(key = sort_scores, reverse=True)
+
+  for score in high_scores:
+    temp_draw.text((0,row),score[1]+"  "+str(score[0]), fill=(255,0,0))
+    row += row_size
+
+  matrix.SetImage(temp_image, 0, 0)
+
+##################################
+# Eval score 
+#   This function checks a passed score to see if it's worthy of our high-score
+#   list. 
+###################################
+def eval_score(score):
+  global high_scores
+ 
+  # Make sure we're sorted properly
+  high_scores.sort(key=sort_scores,reverse=True)
+
+  if (score > high_scores[-1][0]):
+    return True
+  else:
+    return False
+  
+##################################
+# get_dir_nonblock
+##################################
+def get_dir_nonblock():
+  
+  global gamepad
+
+  d_up = 544
+  d_down = 545
+  d_left = 546
+  d_right = 547
+
+  # Note:  I'm currently doing an extra map to [ijkl], because that's the old input
+  # that the game expected.  May be better to eventually change this to the dir, but this 
+  # way I don't have to re-write the mapping in the main loop
+
+  event = gamepad.read_one()
+  if event == None:
+     return "NoInput"
+
+  if event.type ==ecodes.EV_KEY:
+    if event.value == 1:
+        if event.code == d_up:
+          print("UP")
+          return "i"
+        elif event.code == d_down:
+          print("DOWN")
+          return "k"
+        elif event.code == d_left:
+          print("LEFT")
+          return "j"
+        elif event.code == d_right: 
+          print("RIGHT")
+          return "l"
+        else:
+          return "ERROR in get_dir()"
+   
+
+##################################
+# get_dir_blocking
+##################################
+def get_dir_blocking():
+  
+  global gamepad
+
+  d_up = 544
+  d_down = 545
+  d_left = 546
+  d_right = 547
+
+  for event in gamepad.read_loop():
+    if event.type ==ecodes.EV_KEY:
+      if event.value == 1:
+        if event.code == d_up:
+          print("UP")
+          return "D-up"
+        elif event.code == d_down:
+          print("DOWN")
+          return "D-down"
+        elif event.code == d_left:
+          print("LEFT")
+          return "D-left"
+        elif event.code == d_right: 
+          print("RIGHT")
+          return "D-right"
+   
+##################################
+# Input name 
+#   This function will return a 3 character string
+#   built on arcade-style PS3 inputs
+###################################
+def input_name():
+  global gamepad
+  blacklist_strings = ["ASS","SEX","FAG","FUK","FCK","FUC"]
+
+  # Strings are immutable in Python, so I'm going to operate on this 
+  # as a list, and only make it a string (via the "join" method) when needed.
+  name = list("AAA")
+
+  temp_image = Image.new("RGB", (total_columns, total_rows))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  # Going to display the 3 chars in the middle, with a 'v' and '^' 
+  # above and below to show which char the user is tweaking.
+  top_row = 0
+  string_row = 10
+  bottom_row = 20
+  current_char = 0
+  column_spacing = 6
+  column_offset = 10
+  
+  input_color = (0,255,0)
+  highlight_color = (255,0,0)
+  
+  while current_char < 3:
+    # Start by indicating which letter we're changing
+    # we're gonna erase all three lines first, and then redraw
+    temp_draw.rectangle((column_offset,top_row,3*column_spacing+column_offset,bottom_row+10), fill = (0,0,0))
+
+    indicator_position = current_char*column_spacing+column_offset
+    temp_draw.text((indicator_position,top_row),"v", highlight_color)
+    temp_draw.text((column_offset,string_row), "".join(name), fill = input_color)
+    temp_draw.text((indicator_position,bottom_row),"^", highlight_color)
+    matrix.SetImage(temp_image, 0, 0)
+
+    # now wait for an input from our gamepad.  
+    current_input = get_dir_blocking()
+    
+    #if it's an "up", decrement the character
+    if (current_input == "D-up"):
+      if (name[current_char] == "A"):
+        name[current_char] = "Z"
+      else:
+        name[current_char] =chr(ord(name[current_char]) - 1)
+
+    #if it's a "down", increment the character
+    if (current_input == "D-down"):
+      if (name[current_char] == "Z"):
+        name[current_char] = "A"
+      else:
+        name[current_char] =chr(ord(name[current_char]) + 1)
+
+    #if it's "left", go back one character (if you can). 
+    if (current_input == "D-left"):
+      if (current_char > 0):
+        current_char = current_char - 1 
+    
+    #if it's "right", go to the next character
+    # note our while loop will end when we finish the third char.
+    if (current_input == "D-right"):
+      current_char = current_char + 1
+  
+  # Now that we've built our string, make sure it's an appropriate 3 letters.
+  name_string = "".join(name)
+  for bad_name in blacklist_strings:
+    if bad_name == name_string:
+      return("XXX")
+  
+  # return our final string.
+  return(name_string) 
+  
 ###################################################
 #Creates global data
-##############################3#####################
+##################################################
 startRange = (matrix_size/4)
 wormStartLength = 10
 headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
@@ -138,7 +283,35 @@ score = 0
 
 # initial speed is set with a delay between moving of .1
 speed_delay = .14
-#print worm
+
+###############################
+# reset globals
+###############################
+def reset_globals():
+  global headX
+  global headY
+  global matrix_size
+  global startRange
+  global worm
+  global wormStartLength
+  global score
+  global speed_delay
+
+  headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+  headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+
+  wormStartLength = 10
+  del worm[:]
+
+  worm = [[headX,headY]]
+  for i in range(1,wormStartLength):
+    worm.append([headX,headY+i])
+
+  # initial score is 0
+  score = 0
+
+  # initial speed is set with a delay between moving of .1
+  speed_delay = .14
 
 ###################################################
 # show_worm
@@ -266,41 +439,44 @@ def show_score():
     temp_draw.text((0,0),str(score), fill=(255,0,0))
     matrix.SetImage(temp_image,3,0)
 
+##########################################
+# Play game
+#   This is the main game loop.  Will return
+#   when this game is over.
+##########################################
+def play_game():
+  global worm
+  global score
 
+  reset_globals()
 
+  # player starts in the middle of the screen
+  show_worm(True)
+  show_apple(True)
+  show_score()
+  # player starts going up 
+  current_dir = "up"
 
+  print "use ps3 controller to move worm" 
 
-###################################
-# Main loop 
-###################################
+  while True:
+    key = get_dir_nonblock()
+    if key == 'q':
+       break    
+    if (key == 'i') & (current_dir != "down"):
+       current_dir = "up" 
+    if (key == 'k') & (current_dir != "up"):
+       current_dir = "down" 
+    if (key == 'j') & (current_dir != "right"):
+       current_dir = "left" 
+    if (key == 'l') & (current_dir != "left"):
+       current_dir = "right" 
+    if key == 's':
+       current_dir = "stop"
 
-# player starts in the middle of the screen
-show_worm(True)
-show_apple(True)
-show_score()
-# player starts going up 
-current_dir = "up"
-
-print "use ps3 controller to move snake"
-while True:
-  key = get_dir()
- # show_score()
-  if key == 'q':
-     break    
-  if (key == 'i') & (current_dir != "down"):
-    current_dir = "up" 
-  if (key == 'k') & (current_dir != "up"):
-    current_dir = "down" 
-  if (key == 'j') & (current_dir != "right"):
-    current_dir = "left" 
-  if (key == 'l') & (current_dir != "left"):
-    current_dir = "right" 
-  if key == 's':
-    current_dir = "stop"
-
-  if current_dir == "up":
-     # only move the player if there is room to go up.
-     if worm[0][1] > 0:
+    if current_dir == "up":
+      # only move the player if there is room to go up.
+      if worm[0][1] > 0:
         newX = worm[0][0]
         newY = worm[0][1]-1
         if check_self_collision(newX,newY):
@@ -318,13 +494,13 @@ while True:
         worm.insert(0,[newX,newY])
 
         show_head()
-     else:
+      else:
         worm_death()
         break
  
-  if current_dir == "left":
-     # only move the player if there is room to go up.
-     if worm[0][0] > 0:
+    if current_dir == "left":
+      # only move the player if there is room to go up.
+      if worm[0][0] > 0:
         newX = worm[0][0]-1
         newY = worm[0][1]
         if check_self_collision(newX,newY):
@@ -342,13 +518,13 @@ while True:
         worm.insert(0,[newX,newY])
 
         show_head()
-     else:
+      else:
         worm_death()
         break
 
-  if current_dir == "right":
-     # only move the player if there is room to go up.
-     if worm[0][0] < 63:
+    if current_dir == "right":
+      # only move the player if there is room to go up.
+      if worm[0][0] < 63:
         newX = worm[0][0]+1
         newY = worm[0][1]
         if check_self_collision(newX,newY):
@@ -366,13 +542,13 @@ while True:
         worm.insert(0,[newX,newY])
 
         show_head()
-     else:
+      else:
         worm_death()
         break
 
-  if current_dir == "down":
-     # only move the player if there is room to go up.
-     if worm[0][1] < 63:
+    if current_dir == "down":
+      # only move the player if there is room to go up.
+      if worm[0][1] < 63:
         newX = worm[0][0]
         newY = worm[0][1]+1
         if check_self_collision(newX,newY):
@@ -390,12 +566,36 @@ while True:
         worm.insert(0,[newX,newY])
 
         show_head()
-     else:
+      else:
         worm_death()
         break
 
-  time.sleep(speed_delay)
+    time.sleep(speed_delay)
 
-show_score()
-time.sleep(2)
+####################################
+# Main loop
+####################################
+while True:
+  # Show High Scores, waiting for any input on joystick to start.
+  show_high_scores()
+  get_dir_blocking()
+
+  #blank the screen
+  temp_image = Image.new("RGB", (total_columns, total_rows))
+  temp_draw = ImageDraw.Draw(temp_image)
+  temp_draw.rectangle((0,0,total_columns, total_rows), fill=(0,0,0))
+  matrix.SetImage(temp_image, 0, 0)
+
+  # play the game
+  play_game()
+
+  # How did you do?  If good enough, input a new high score.
+  if eval_score(score):
+    my_name = input_name()
+    high_scores.append([score,my_name]) 
+    high_scores.sort(key=sort_scores,reverse=True)
+    del high_scores[-1]
+  else:
+    show_score()
+    time.sleep(5)
 
