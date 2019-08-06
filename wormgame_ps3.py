@@ -6,6 +6,9 @@ import termios, fcntl
 
 # used to slow down our main loop
 import time
+# instead of using time and delays, I'm going to use datetime
+# to determine whether I want to run the "update" portion of my loop.
+from datetime import datetime
 
 import random
 
@@ -458,22 +461,41 @@ def play_game():
   current_dir = "up"
 
   print "use ps3 controller to move worm" 
+ 
+  last_update_time = datetime.now()
+  
 
   while True:
+
+    dir_pressed = False
+    current_time = datetime.now()
+    deltaT = current_time - last_update_time
+
     key = get_dir_nonblock()
     if key == 'q':
        break    
     if (key == 'i') & (current_dir != "down"):
        current_dir = "up" 
+       dir_pressed = True
     if (key == 'k') & (current_dir != "up"):
        current_dir = "down" 
+       dir_pressed = True
     if (key == 'j') & (current_dir != "right"):
        current_dir = "left" 
+       dir_pressed = True
     if (key == 'l') & (current_dir != "left"):
        current_dir = "right" 
+       dir_pressed = True
     if key == 's':
        current_dir = "stop"
 
+    #  Should probably use positive logic here to update the current direction, 
+    # but instead, I'm using the continue construct.
+    if ((deltaT.total_seconds() < speed_delay) & (dir_pressed == False)):
+      continue 
+ 
+    last_update_time = current_time
+    
     if current_dir == "up":
       # only move the player if there is room to go up.
       if worm[0][1] > 0:
@@ -570,7 +592,6 @@ def play_game():
         worm_death()
         break
 
-    time.sleep(speed_delay)
 
 ####################################
 # Main loop
