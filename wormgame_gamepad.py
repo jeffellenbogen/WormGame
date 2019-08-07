@@ -1,22 +1,13 @@
-###############################
-#  Imports for reading keyboard
-##############################
-import sys, os
-import termios, fcntl
 
-# used to slow down our main loop
-import time
 # instead of using time and delays, I'm going to use datetime
 # to determine whether I want to run the "update" portion of my loop.
+# Still need time for "end game" pause though.
+import time
 from datetime import datetime
 
 import random
 
-from evdev import InputDevice, categorize, ecodes
-
-gamepad = InputDevice('/dev/input/event1')
-
-#add error checking here to make sure we've got an input device...
+from usb_gamepad import gamepad_read_blocking,gamepad_read_nonblocking 
 
 ###################################
 # Graphics imports, constants and structures
@@ -71,7 +62,6 @@ high_scores = \
   (0,"DAW")   \
 ]
 
-
 ##################################
 # Sort Scores
 #  Want to sort based on first value
@@ -91,7 +81,6 @@ def show_high_scores():
   row_size = 10 
   
   high_score_color = (255,0,0)
-  
   
   temp_draw.text((0,row),"High Scores:", fill=(255,0,0))
   row += row_size
@@ -120,72 +109,6 @@ def eval_score(score):
   else:
     return False
   
-##################################
-# get_dir_nonblock
-##################################
-def get_dir_nonblock():
-  
-  global gamepad
-
-  d_up = 544
-  d_down = 545
-  d_left = 546
-  d_right = 547
-
-  # Note:  I'm currently doing an extra map to [ijkl], because that's the old input
-  # that the game expected.  May be better to eventually change this to the dir, but this 
-  # way I don't have to re-write the mapping in the main loop
-
-  event = gamepad.read_one()
-  if event == None:
-     return "NoInput"
-
-  if event.type ==ecodes.EV_KEY:
-    if event.value == 1:
-        if event.code == d_up:
-          print("UP")
-          return "i"
-        elif event.code == d_down:
-          print("DOWN")
-          return "k"
-        elif event.code == d_left:
-          print("LEFT")
-          return "j"
-        elif event.code == d_right: 
-          print("RIGHT")
-          return "l"
-        else:
-          return "ERROR in get_dir()"
-   
-
-##################################
-# get_dir_blocking
-##################################
-def get_dir_blocking():
-  
-  global gamepad
-
-  d_up = 544
-  d_down = 545
-  d_left = 546
-  d_right = 547
-
-  for event in gamepad.read_loop():
-    if event.type ==ecodes.EV_KEY:
-      if event.value == 1:
-        if event.code == d_up:
-          print("UP")
-          return "D-up"
-        elif event.code == d_down:
-          print("DOWN")
-          return "D-down"
-        elif event.code == d_left:
-          print("LEFT")
-          return "D-left"
-        elif event.code == d_right: 
-          print("RIGHT")
-          return "D-right"
-   
 ##################################
 # Input name 
 #   This function will return a 3 character string
@@ -226,7 +149,7 @@ def input_name():
     matrix.SetImage(temp_image, 0, 0)
 
     # now wait for an input from our gamepad.  
-    current_input = get_dir_blocking()
+    current_input = gamepad_read_blocking()
     
     #if it's an "up", decrement the character
     if (current_input == "D-up"):
@@ -460,7 +383,7 @@ def play_game():
   # player starts going up 
   current_dir = "up"
 
-  print "use ps3 controller to move worm" 
+  print "use gamepad to move worm" 
  
   last_update_time = datetime.now()
   
@@ -471,25 +394,21 @@ def play_game():
     current_time = datetime.now()
     deltaT = current_time - last_update_time
 
-    key = get_dir_nonblock()
-    if key == 'q':
-       break    
-    if (key == 'i') & (current_dir != "down"):
+    key = gamepad_read_nonblocking()
+    if (key == "D-up") & (current_dir != "down"):
        current_dir = "up" 
        dir_pressed = True
-    if (key == 'k') & (current_dir != "up"):
+    if (key == "D-down") & (current_dir != "up"):
        current_dir = "down" 
        dir_pressed = True
-    if (key == 'j') & (current_dir != "right"):
+    if (key == "D-left") & (current_dir != "right"):
        current_dir = "left" 
        dir_pressed = True
-    if (key == 'l') & (current_dir != "left"):
+    if (key == "D-right") & (current_dir != "left"):
        current_dir = "right" 
        dir_pressed = True
-    if key == 's':
-       current_dir = "stop"
 
-    #  Should probably use positive logic here to update the current direction, 
+    # Should probably use positive logic here to update the current direction, 
     # but instead, I'm using the continue construct.
     if ((deltaT.total_seconds() < speed_delay) & (dir_pressed == False)):
       continue 
@@ -599,7 +518,7 @@ def play_game():
 while True:
   # Show High Scores, waiting for any input on joystick to start.
   show_high_scores()
-  get_dir_blocking()
+  gamepad_read_blocking()
 
   #blank the screen
   temp_image = Image.new("RGB", (total_columns, total_rows))
