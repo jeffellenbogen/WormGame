@@ -23,7 +23,7 @@ matrix_columns = 32
 matrix_horizontal = 5 
 matrix_vertical = 3
 
-matrix_size = 64
+#matrix_size = 64
 
 total_rows = matrix_rows * matrix_vertical
 total_columns = matrix_columns * matrix_horizontal
@@ -187,10 +187,11 @@ def input_name():
 ###################################################
 #Creates global data
 ##################################################
-startRange = (matrix_size/4)
+#startRange = (matrix_size/4)
+edgeBuffer = 10  # number of pixels to avoid around the boarder
 wormStartLength = 10
-headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
-headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+headX = random.randint(edgeBuffer,total_columns- edgeBuffer)
+headY = random.randint(edgeBuffer,total_rows- edgeBuffer)
 
 worm = [[headX,headY]]
 for i in range(1,wormStartLength):
@@ -216,15 +217,15 @@ speed_delay = .14
 def reset_globals():
   global headX
   global headY
-  global matrix_size
+  global edgeBuffer
   global startRange
   global worm
   global wormStartLength
   global score
   global speed_delay
 
-  headX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
-  headY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+  headX = random.randint(edgeBuffer,total_columns- edgeBuffer)
+  headY = random.randint(edgeBuffer,total_rows- edgeBuffer)
 
   wormStartLength = 10
   del worm[:]
@@ -300,13 +301,14 @@ def worm_death():
 # show_apple
 ####################################################
 def show_apple(show):
+  global edgeBuffer
   global appleX
   global appleY
   if show:
     temp_color = apple_color
     temp_color_stem = stem_color
-    appleX = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
-    appleY = random.randint(matrix_size/2-startRange,matrix_size/2+startRange)
+    appleX = random.randint(edgeBuffer,total_columns - edgeBuffer)
+    appleY = random.randint(edgeBuffer,total_rows - edgeBuffer)
   
   else:
     temp_color = black
