@@ -491,7 +491,7 @@ def play_game():
 
     if current_dir == "down":
       # only move the player if there is room to go up.
-      if worm[0][1] < total_row-1:
+      if worm[0][1] < total_rows-1:
         newX = worm[0][0]
         newY = worm[0][1]+1
         if check_self_collision(newX,newY):
