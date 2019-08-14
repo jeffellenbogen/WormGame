@@ -1,4 +1,6 @@
 
+# Persistent High Score version of the worm game.
+
 # instead of using time and delays, I'm going to use datetime
 # to determine whether I want to run the "update" portion of my loop.
 # Still need time for "end game" pause though.
