@@ -13,7 +13,10 @@ from usb_gamepad import gamepad_read_blocking,gamepad_read_nonblocking
 # Graphics imports, constants and structures
 ###################################
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
+
+fntLG = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 14)
+fntSM = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 12)
 
 # this is the size of ONE of our matrixes. 
 matrix_rows = 32 
@@ -78,17 +81,17 @@ def show_high_scores():
   temp_image = Image.new("RGB", (total_columns, total_rows))
   temp_draw = ImageDraw.Draw(temp_image)
   row = 0
-  row_size = 10 
+  row_size = 14 
   
   high_score_color = (255,0,0)
   
-  temp_draw.text((0,row),"High Scores:", fill=(255,0,0))
+  temp_draw.text((4,row),"High Scores:", fill=(255,0,0), font = fntLG)
   row += row_size
 
   high_scores.sort(key = sort_scores, reverse=True)
 
   for score in high_scores:
-    temp_draw.text((0,row),score[1]+"  "+str(score[0]), fill=(255,0,0))
+    temp_draw.text((4,row),score[1]+"  "+str(score[0]), fill=(255,0,0), font = fntLG)
     row += row_size
 
   matrix.SetImage(temp_image, 0, 0)
@@ -143,9 +146,9 @@ def input_name():
     temp_draw.rectangle((column_offset,top_row,3*column_spacing+column_offset,bottom_row+10), fill = (0,0,0))
 
     indicator_position = current_char*column_spacing+column_offset
-    temp_draw.text((indicator_position,top_row),"v", highlight_color)
-    temp_draw.text((column_offset,string_row), "".join(name), fill = input_color)
-    temp_draw.text((indicator_position,bottom_row),"^", highlight_color)
+    temp_draw.text((indicator_position,top_row),"v", highlight_color, font = fntLG)
+    temp_draw.text((column_offset,string_row), "".join(name), fill = input_color, font = fntLG)
+    temp_draw.text((indicator_position,bottom_row),"^", highlight_color, font = fntLG)
     matrix.SetImage(temp_image, 0, 0)
 
     # now wait for an input from our gamepad.  
@@ -364,7 +367,7 @@ def show_score():
     temp_image = Image.new("RGB", (24, 12))
     temp_draw = ImageDraw.Draw(temp_image)
 #temp_draw.point((1,1), fill=(255,0,0))
-    temp_draw.text((0,0),str(score), fill=(255,0,0))
+    temp_draw.text((0,0),str(score), fill=(255,0,0), font = fntLG)
     matrix.SetImage(temp_image,3,0)
 
 ##########################################
