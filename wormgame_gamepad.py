@@ -161,8 +161,8 @@ def input_name():
   string_row = 10
   bottom_row = 20
   current_char = 0
-  column_spacing = 9
-  column_offset = 20
+  column_spacing = 8
+  column_offset = 10 
   
   input_color = (0,255,0)
   highlight_color = (255,0,0)
@@ -170,7 +170,7 @@ def input_name():
   while current_char < 3:
     # Start by indicating which letter we're changing
     # we're gonna erase all three lines first, and then redraw
-    temp_draw.rectangle((column_offset,top_row,3*column_spacing+column_offset,bottom_row+10), fill = (0,0,0))
+    temp_draw.rectangle((0,top_row,3*column_spacing+column_offset,bottom_row+10), fill = (0,0,0))
 
     indicator_position = current_char*column_spacing+column_offset
     temp_draw.text((indicator_position,top_row),"v", highlight_color, font = fntLG)
