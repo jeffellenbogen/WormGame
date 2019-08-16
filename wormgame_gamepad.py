@@ -15,7 +15,7 @@ from usb_gamepad import gamepad_read_blocking,gamepad_read_nonblocking
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from PIL import Image, ImageDraw, ImageFont
 
-fntLG = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 16)
+fntLG = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 14)
 fntSM = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 12)
 
 # this is the size of ONE of our matrixes. 
