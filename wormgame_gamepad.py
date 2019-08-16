@@ -161,8 +161,8 @@ def input_name():
   string_row = 10
   bottom_row = 20
   current_char = 0
-  column_spacing = 6
-  column_offset = 10
+  column_spacing = 9
+  column_offset = 20
   
   input_color = (0,255,0)
   highlight_color = (255,0,0)
