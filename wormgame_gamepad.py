@@ -85,13 +85,13 @@ def show_high_scores():
   
   high_score_color = (255,0,0)
   
-  temp_draw.text((0,row),"High Scores:", fill=(255,0,0), font = fntLG)
+  temp_draw.text((4,row),"High Scores:", fill=(255,0,0), font = fntLG)
   row += row_size
 
   high_scores.sort(key = sort_scores, reverse=True)
 
   for score in high_scores:
-    temp_draw.text((0,row),score[1]+"  "+str(score[0]), fill=(255,0,0), font = fntLG)
+    temp_draw.text((4,row),score[1]+"  "+str(score[0]), fill=(255,0,0), font = fntLG)
     row += row_size
 
   matrix.SetImage(temp_image, 0, 0)
