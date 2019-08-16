@@ -16,7 +16,7 @@ from rgbmatrix import RGBMatrix, RGBMatrixOptions
 from PIL import Image, ImageDraw, ImageFont
 
 fntLG = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 18)
-fntSM = ImageFont.truetype('Pillow/Tests/fonts/arial.ttf', 14)
+fntSM = ImageFont.truetype('Pillow/Tests/fonts/times.ttf', 14)
 
 # this is the size of ONE of our matrixes. 
 matrix_rows = 32 
@@ -81,7 +81,7 @@ def show_high_scores():
   temp_image = Image.new("RGB", (total_columns, total_rows))
   temp_draw = ImageDraw.Draw(temp_image)
   row = 0
-  row_size = 10 
+  row_size = 14 
   
   high_score_color = (255,0,0)
   
