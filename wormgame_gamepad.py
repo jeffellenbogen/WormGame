@@ -1,4 +1,6 @@
 
+# Persistent High Score version of the worm game.
+
 # instead of using time and delays, I'm going to use datetime
 # to determine whether I want to run the "update" portion of my loop.
 # Still need time for "end game" pause though.
@@ -112,6 +114,31 @@ def eval_score(score):
   else:
     return False
   
+##################################
+#  Write high score data
+#     Will overwrite the "high_scores.txt" file
+##################################
+def write_high_scores():
+  global high_scores
+
+  with open('high_scores.txt','w') as f:
+    for score in high_scores:
+      f.write(str(score[0])+","+score[1]+"\n")
+      
+####################################
+# Read high score file into high_scores list
+####################################
+def read_high_scores():
+  global high_scores
+
+  with open('high_scores.txt','r') as f:
+    del high_scores[:]
+    for line in f:
+      line = line.strip()
+      score = line.split(",")     
+      score[0] = int(score[0])
+      high_scores.append(score)
+      
 ##################################
 # Input name 
 #   This function will return a 3 character string
@@ -522,6 +549,7 @@ def play_game():
 ####################################
 while True:
   # Show High Scores, waiting for any input on joystick to start.
+  read_high_scores()
   show_high_scores()
   gamepad_read_blocking()
 
@@ -540,6 +568,7 @@ while True:
     high_scores.append([score,my_name]) 
     high_scores.sort(key=sort_scores,reverse=True)
     del high_scores[-1]
+    write_high_scores()
   else:
     show_score()
     time.sleep(5)
