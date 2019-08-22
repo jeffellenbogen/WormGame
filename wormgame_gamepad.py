@@ -239,7 +239,7 @@ black = (0,0,0)
 score = 0
 
 # initial speed is set with a delay between moving of .1
-speed_delay = .1
+speed_delay = .08
 
 ###############################
 # reset globals
@@ -267,7 +267,7 @@ def reset_globals():
   # initial score is 0
   score = 0
 
-  speed_delay = .1
+  speed_delay = .08
 
 ###################################################
 # show_worm
